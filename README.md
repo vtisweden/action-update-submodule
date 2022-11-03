@@ -23,7 +23,7 @@ This action creates a pull request in a parent repository to update one of its s
 ## Example usage
 
 ```yaml
-uses: vtisweden/actions-test@main
+uses: vtisweden/action-update-submodule@main
 with:
   github-token: ${{ secrets.TOKEN }}
   submodule-path: path/to/submodule
