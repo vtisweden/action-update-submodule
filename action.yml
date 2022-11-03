@@ -1,0 +1,59 @@
+name: 'Update Submodule'
+description: 'This action creates a pull request in a parent repository to update one of its submodules.'
+
+inputs:
+  github-token:
+    required: true
+  submodule-path:
+    required: true
+  parent-repository:
+    required: true
+  parent-branch:
+    required: true
+runs:
+  using: 'composite'
+  steps:
+    - name: Checkout parent repository
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+        ref: ${{ inputs.parent-branch }}
+        repository: ${{ inputs.parent-repository }}
+        submodules: true
+        token: ${{ inputs.github-token }}
+
+    - name: Update submodule and create pull request if needed
+      env:
+        GH_TOKEN: ${{ inputs.github-token }}
+      shell: bash
+      run: |
+        submodule_path=${{ inputs.submodule-path }}
+        branch_name=sync/${submodule_path##*/}
+
+        git config user.name 'github-actions[bot]'
+        git config user.email 'github-actions[bot]@users.noreply.github.com'
+
+        if gh pr list | cut -f 3 -d $'\t' | grep -q "^$branch_name$"
+        then
+          git checkout $branch_name
+          create_pr=false
+        else
+          git checkout -b $branch_name
+          create_pr=true
+        fi
+
+        git submodule update --remote -- ${{ inputs.submodule-path }}
+        git add -- ${{ inputs.submodule-path }}
+
+        if git status | grep -q "Changes to be committed"
+        then
+          git commit ${{ inputs.submodule-path }} -m"Update submodule ${{ inputs.submodule-path }}"
+          git push --set-upstream origin $branch_name
+        else
+          create_pr=false
+        fi
+
+        if $create_pr
+        then
+          gh pr create --title "Update submodule ${{ inputs.submodule-path }}" --body "" --base "${{ inputs.parent-branch }}" --head "$branch_name"
+        fi
