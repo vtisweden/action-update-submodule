@@ -30,8 +30,8 @@ runs:
         submodule_path=${{ inputs.submodule-path }}
         branch_name=sync/${submodule_path##*/}
 
-        git config user.name 'github-actions[bot]'
-        git config user.email 'github-actions[bot]@users.noreply.github.com'
+        git config user.name 'vtisweden-bot[bot]'
+        git config user.email 'vtisweden-bot[bot]@users.noreply.github.com'
 
         if gh pr list | cut -f 3 -d $'\t' | grep -q "^$branch_name$"
         then
