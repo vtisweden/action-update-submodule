@@ -14,7 +14,7 @@ runs:
   using: 'composite'
   steps:
     - name: Checkout parent repository
-      uses: actions/checkout@v3
+      uses: actions/checkout@v6
       with:
         fetch-depth: 0
         ref: ${{ inputs.parent-branch }}
