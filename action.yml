@@ -19,7 +19,7 @@ runs:
         fetch-depth: 0
         ref: ${{ inputs.parent-branch }}
         repository: ${{ inputs.parent-repository }}
-        submodules: true
+        submodules: 'recursive'
         token: ${{ inputs.github-token }}
 
     - name: Update submodule and create pull request if needed
@@ -33,12 +33,18 @@ runs:
         git config user.name 'vtisweden-bot[bot]'
         git config user.email 'vtisweden-bot[bot]@users.noreply.github.com'
 
-        if gh pr list | cut -f 3 -d $'\t' | grep -q "^$branch_name$"
+        if git ls-remote --exit-code --heads origin "$branch_name" > /dev/null
         then
           git checkout $branch_name
-          create_pr=false
+          git submodule update --init --recursive
+          if [ -n "$(gh pr list --head "$branch_name" --state open --json number -q '.[].number')" ]
+          then
+            create_pr=false
+          else
+            create_pr=true
+          fi
         else
-          git checkout -b $branch_name
+          git checkout -b "$branch_name"
           create_pr=true
         fi
 
