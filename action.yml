@@ -30,6 +30,7 @@ runs:
         submodule_path=${{ inputs.submodule-path }}
         branch_name=sync/${submodule_path##*/}
 
+        gh auth setup-git
         git config user.name 'vtisweden-bot[bot]'
         git config user.email 'vtisweden-bot[bot]@users.noreply.github.com'
 
